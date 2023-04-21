@@ -1,0 +1,31 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Pair {
+  id: Float!
+  token0_name: String!
+  token1_name: String!
+  pair_address: String!
+}
+
+type SnapshotPairData {
+  id: Float!
+  pair: Pair!
+  hourlyVolumeToken0: String!
+  hourlyVolumeToken1: String!
+  hourlyVolumeUSD: String!
+  reserve0: String!
+  reserve1: String!
+  reserveUSD: String!
+  timestamp: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Query {
+  getPairInfo: [SnapshotPairData!]!
+}
