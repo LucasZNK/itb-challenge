@@ -31,11 +31,12 @@ export class Pair {
   @Index()
   address: string;
 
-  @Column()
+  // Store token0 and token1 as JSON data
+  @Column({ type: 'json' })
   @Field(() => Token)
   token0: Token;
 
-  @Column()
+  @Column({ type: 'json' })
   @Field(() => Token)
   token1: Token;
 

@@ -2,11 +2,17 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Token {
+  name: String!
+  symbol: String!
+}
+
 type Pair {
-  id: Float!
-  token0_name: String!
-  token1_name: String!
-  pair_address: String!
+  id: Int!
+  address: String!
+  token0: Token!
+  token1: Token!
+  snapshotPairData: [SnapshotPairData!]!
 }
 
 type SnapshotPairData {
