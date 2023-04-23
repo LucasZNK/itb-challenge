@@ -1,12 +1,12 @@
-export const pairInfoQuery = `
-query GetPairHourDatas($fromHoursAgo: Int!) {
+export const pairInfoQuery = `query GetPairHourDatas($fromHoursAgo: Int!) {
   pairHourDatas(
-    where: { pair: addressPair}
+    where: { pair: PAIR_ADDRESS_PLACEHOLDER }
     orderBy: hourStartUnix
     orderDirection: desc
     first: $fromHoursAgo
   ) {
     pair {
+      id
       token0 {
         name
       }
@@ -22,6 +22,4 @@ query GetPairHourDatas($fromHoursAgo: Int!) {
     reserveUSD
   }
 }
-
-
 `;

@@ -7,7 +7,7 @@ export class SnapshotsResolver {
   constructor(private snapshotService: SnapshotsService) {}
 
   @Query((returns) => [SnapshotPairData])
-  getPairInfo(): Promise<SnapshotPairData[]> {
+  getPairInfo() {
     return this.snapshotService.findAll();
   }
 }

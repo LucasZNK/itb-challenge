@@ -1,16 +1,17 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { SnapshotPairData } from './entities/snapshot.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Pair } from './entities/pair.entity';
 import { GraphQLClientService } from 'src/graphql-client/graphql-client.service';
-import { GraphQLClient } from 'graphql-request';
+import { GraphQLClient, Variables } from 'graphql-request';
 import { pairInfoQuery } from 'src/graphql-client/queries';
-import { buildPairDataQuery } from 'src/graphql-client/utils';
+import { initialPairs } from './constants/initial-addresses';
+import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class SnapshotsService implements OnModuleInit {
   graphqlExternalClient: GraphQLClient;
-
+  initialPairs;
   constructor(
     @InjectRepository(SnapshotPairData)
     private snapshotRepository: Repository<SnapshotPairData>,
@@ -19,42 +20,50 @@ export class SnapshotsService implements OnModuleInit {
     private graphqlClientService: GraphQLClientService,
   ) {
     this.graphqlExternalClient = this.graphqlClientService.getClient();
+    this.initialPairs = initialPairs;
   }
 
   async onModuleInit() {
     console.log('Snapshots service initialized');
 
-    const data = await this.fetchPairData(
-      '0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc',
-      1,
-    );
-    console.log(data);
-  }
+    try {
+      initialPairs.forEach(async (address) => {
+        let pair = await this.pairRepository.findOne({
+          where: { address: address },
+        });
+        if (!pair) {
+          const query = this.graphqlClientService.buildPairDataQuery(
+            pairInfoQuery,
+            address,
+          );
 
-  async getPairDataFromDb(pairAddress: string, fromHoursAgo: number) {
-    const pairExists = await this.pairRepository.findOne({
-      where: { address: pairAddress },
-    });
+          let response: any = await this.fetchPairData(query, 48);
 
-    if (pairExists) {
-      let snapshotOnTime = await this.snapshotRepository.find({
-        where: {
-          pair: pairExists,
-          timestamp: MoreThan(this.generateTimestamp(1)),
-        },
+          if (response) {
+            await this.createPair(response.data.pairHourDatas[0]);
+
+            await this.saveSnapshotsFrom48hs(response.data.pairHourDatas);
+          } else {
+            console.log('Error fetching data');
+          }
+        } else {
+          const dataNeedsUpdate = this.verifySnapshotIsOlderThan1Hour(address);
+          if (dataNeedsUpdate) {
+            const query = this.graphqlClientService.buildPairDataQuery(
+              pairInfoQuery,
+              address,
+            );
+
+            const data = await this.fetchPairData(query, 1);
+            await this.saveSnapshot(data, pair);
+          }
+        }
       });
-      if (snapshotOnTime) {
-        return snapshotOnTime;
-      } else {
-        // fetch for new data and save on the database
-      }
-    }
-    // fetch for 48 hours of data and save on the database
+    } catch (error) {}
   }
 
   async fetchPairData(addressPair: string, fromHoursAgo: number) {
-    const params = {
-      addressPair: addressPair,
+    const params: Variables = {
       fromHoursAgo: fromHoursAgo,
     };
 
@@ -63,71 +72,142 @@ export class SnapshotsService implements OnModuleInit {
       addressPair,
     );
 
+    console.log("Generated query:");
+    console.log(query);
     const data = await this.graphqlExternalClient.request(query, params);
     return data;
   }
 
-  async findAll(): Promise<SnapshotPairData[]> {
-    return await this.snapshotRepository.find();
+  @Cron(CronExpression.EVERY_HOUR)
+  async getPairsInforLastHour() {
+    initialPairs.forEach(async (address) => {
+      const dataNeedsUpdate = this.verifySnapshotIsOlderThan1Hour(address);
+      if (dataNeedsUpdate) {
+        const query = this.graphqlClientService.buildPairDataQuery(
+          pairInfoQuery,
+          address,
+        );
+
+        const pair = await this.pairRepository.findOne({
+          where: { address: address },
+        });
+
+        const data = await this.fetchPairData(query, 1);
+        await this.saveSnapshot(data, pair);
+      }
+    });
   }
 
-  // async getHourlyData(): Promise<SnapshotPairData[]> {
-  //   // validate if the data is already saved and is older than 1 hour
-  //   // if it is, return the existing database data
-  // }
+  private async saveSnapshotsFrom48hs(pairHourDatas) {
+    const existingPair = await this.pairRepository.findOne({
+      where: { address: pairHourDatas[0].pair.id },
+    });
 
-  async savePairHourData(data: SnapshotPairData[]) {
-    // Save the pair data
-    // If the pair doesn't exist, create it on db
-    // If the pair exists, update the data
-    const pairHourDatas = data;
+    if (!existingPair) {
+      // If the pair does not exist, create a new pair and save it to the database.
+      const newPair = await this.createPair(pairHourDatas);
 
-    for (let index = 0; index < pairHourDatas.length; index++) {
-      const pairHourData = pairHourDatas[index];
+      await this.pairRepository.save(newPair);
 
-      let pair = await this.pairRepository.findOne({
-        where: {
-          address: pairHourData.pair.address,
-        },
+      // For each pairHourData in the response, call the saveSnapshot function to save the snapshot to the database.
+
+      for (let index = 0; index < pairHourDatas.length; index++) {
+        const pairHourData = pairHourDatas[index];
+
+        let pair = await this.pairRepository.findOne({
+          where: {
+            address: pairHourData.pair.address,
+          },
+        });
+
+        await this.saveSnapshot(
+          newPair,
+          pairHourData,
+          this.generateTimestamp(index),
+        );
+      }
+    }
+
+    return { success: true, error: null };
+  }
+
+  private async saveSnapshot(pair, pairHourData, customTimestamp = new Date()) {
+    try {
+      const newSnapshotPairData = this.snapshotRepository.create({
+        pair: pair,
+        hourlyVolumeToken0: pairHourData.hourlyVolumeToken0,
+        hourlyVolumeToken1: pairHourData.hourlyVolumeToken1,
+        hourlyVolumeUSD: pairHourData.hourlyVolumeUSD,
+        reserve0: pairHourData.reserve0,
+        reserve1: pairHourData.reserve1,
+        reserveUSD: pairHourData.reserveUSD,
+        timestamp: customTimestamp,
       });
 
-      if (!pair) {
-        pair = new Pair();
-        pair.token0.name = pairHourData.pair.token0.name;
-        pair.token1.name = pairHourData.pair.token1.name;
-        pair.address = pairHourData.pair.address;
-        await this.pairRepository.save(pair);
-      }
-
-      const snapshot = await this.createSnapshot(pairHourData, pair, index);
-
-      await this.snapshotRepository.save(snapshot);
+      await this.snapshotRepository.save(newSnapshotPairData);
+      console.log(`snapshot saved for ${pair.address} at ${customTimestamp} `);
+    } catch (error) {
+      // TODO: Handle errors
     }
   }
 
-  async createSnapshot(
-    pairHourData: SnapshotPairData,
-    pair: Pair,
-    index: number,
-  ) {
-    const snapshot = new SnapshotPairData();
-    snapshot.pair = pair;
-    snapshot.hourlyVolumeToken0 = pairHourData.hourlyVolumeToken0;
-    snapshot.hourlyVolumeToken1 = pairHourData.hourlyVolumeToken1;
-    snapshot.hourlyVolumeUSD = pairHourData.hourlyVolumeUSD;
-    snapshot.reserve0 = pairHourData.reserve0;
-    snapshot.reserve1 = pairHourData.reserve1;
-    snapshot.reserveUSD = pairHourData.reserveUSD;
-    const date = this.generateTimestamp(index);
-    snapshot.timestamp = date;
+  // Checks if the latest snapshot of a pair in the database is more than one hour old.
+  private async verifySnapshotIsOlderThan1Hour(pairAddress) {
+    try {
+      // Find the existing pair in the database.
+      const existingPair = await this.pairRepository.findOne({
+        where: { address: pairAddress },
+      });
 
-    return snapshot;
+      if (existingPair) {
+        // If the pair exists, find the latest snapshot for that pair in the database.
+        const latestSnapshot = await this.snapshotRepository.findOne({
+          where: { pair: existingPair },
+          order: { timestamp: 'DESC' },
+        });
+
+        if (latestSnapshot) {
+          // If the latest snapshot exists, check if its timestamp is more than one hour old.
+          const oneHourAgo = new Date();
+          oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+          return {
+            success: true,
+            result: latestSnapshot.timestamp < oneHourAgo,
+          };
+        }
+      } else {
+        throw new Error();
+      }
+
+      // If the pair or latest snapshot does not exist, return a false result.
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 
-  generateTimestamp(hourData: number) {
+  private async createPair(pairHourDatas): Promise<Pair> {
+    const { address, token0, token1 } = pairHourDatas[0].pair;
+    try {
+      const newPair = this.pairRepository.create({
+        address,
+        token0,
+        token1,
+      });
+      await this.pairRepository.save(newPair);
+      return;
+    } catch (error) {
+      // TODO: Add error handling here
+      throw new Error();
+    }
+  }
+
+  private generateTimestamp(hourData: number) {
     // The graph returns the data without timestamp, so we need to generate it
     const now = new Date();
     const timestamp = new Date(now.getTime() - hourData * 60 * 60 * 1000);
     return timestamp;
   }
+
+  async findAll() {}
 }
