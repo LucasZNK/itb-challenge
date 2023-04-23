@@ -2,13 +2,18 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { SnapshotPairData } from './entities/snapshot.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Pair } from './entities/pair.entity';
 import { GraphQLClientService } from 'src/graphql-client/graphql-client.service';
 import { GraphQLClient, Variables } from 'graphql-request';
 import { pairInfoQuery } from 'src/graphql-client/queries';
 import { initialPairs } from './constants/initial-addresses';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DocumentNode } from 'graphql';
+import {
+  IPair,
+  IPairHourData,
+  IPairHourDatasResponse,
+} from './interfaces/pair-hour.interface';
+import { Pair } from './entities/pair.entity';
 
 @Injectable()
 export class SnapshotsService implements OnModuleInit {
@@ -30,49 +35,74 @@ export class SnapshotsService implements OnModuleInit {
 
     try {
       initialPairs.forEach(async (address) => {
+        const query = this.graphqlClientService.buildPairDataQuery(
+          pairInfoQuery,
+          address,
+        );
+
         let pair = await this.pairRepository.findOne({
           where: { address: address },
         });
+
         if (!pair) {
-          const query = this.graphqlClientService.buildPairDataQuery(
-            pairInfoQuery,
-            address,
+          let response: IPairHourDatasResponse = await this.fetchPairData(
+            query,
+            48,
           );
 
-          let response: any = await this.fetchPairData(query, 48);
-            console.log(response)
-          if (response) {
-            await this.createPair(response.data.pairHourDatas[0]);
+          console.log(response);
 
-            await this.saveSnapshotsFrom48hs(response.data.pairHourDatas);
-          } else {
-            console.log('Error fetching data');
-          }
-        } else {
-          const dataNeedsUpdate = this.verifySnapshotIsOlderThan1Hour(address);
-          if (dataNeedsUpdate) {
-            const query = this.graphqlClientService.buildPairDataQuery(
-              pairInfoQuery,
+          if (response) {
+            let newPair = await this.createPair(
+              response.pairHourDatas[0].pair,
               address,
             );
 
-            const data = await this.fetchPairData(query, 1);
-            await this.saveSnapshot(data, pair);
+            await this.saveSnapshotsFrom48hs(response.pairHourDatas, newPair);
+
+
+
+
+            const pairTest = await this.pairRepository.findOne({
+              where: { address: address },
+            });
+
+         
+
+            const snapshots = await this.snapshotRepository.find({
+              where: { pair: { id: pairTest.id } },
+            });
+  
+            console.log(snapshots)
+          } else {
+            console.log('Error fetching data');
           }
+          // } else {
+          //   const dataNeedsUpdate = this.verifySnapshotIsOlderThan1Hour(address);
+          //   if (dataNeedsUpdate) {
+          //     const query = this.graphqlClientService.buildPairDataQuery(
+          //       pairInfoQuery,
+          //       address,
+          //     );
+
+          //     const data = await this.f etchPa irData(query, 1);
+          //     await this.saveSnapshot(data, pair);
+          //   }
+        } else {
+          // verify if is older than 1 hour and fetch
         }
       });
     } catch (error) {}
   }
 
-  async fetchPairData(query: DocumentNode, fromHoursAgo: number) {
+  async fetchPairData(query: DocumentNode, fromHoursAgo: number): Promise<any> {
     const params: Variables = {
       fromHoursAgo: fromHoursAgo,
     };
-  
+
     const data = await this.graphqlExternalClient.request(query, params);
     return data;
   }
-  
 
   @Cron(CronExpression.EVERY_HOUR)
   async getPairsInforLastHour() {
@@ -94,40 +124,28 @@ export class SnapshotsService implements OnModuleInit {
     });
   }
 
-  private async saveSnapshotsFrom48hs(pairHourDatas) {
-    const existingPair = await this.pairRepository.findOne({
-      where: { address: pairHourDatas[0].pair.id },
-    });
+  private async saveSnapshotsFrom48hs(
+    pairHourDatas: IPairHourData[],
+    pair: Pair,
+  ) {
+    // For each pairHourData in the response, call the saveSnapshot function to save the snapshot to the database.
 
-    if (!existingPair) {
-      // If the pair does not exist, create a new pair and save it to the database.
-      const newPair = await this.createPair(pairHourDatas);
+    for (let index = 0; index < pairHourDatas.length; index++) {
+      const pairHourData = pairHourDatas[index];
 
-      await this.pairRepository.save(newPair);
-
-      // For each pairHourData in the response, call the saveSnapshot function to save the snapshot to the database.
-
-      for (let index = 0; index < pairHourDatas.length; index++) {
-        const pairHourData = pairHourDatas[index];
-
-        let pair = await this.pairRepository.findOne({
-          where: {
-            address: pairHourData.pair.address,
-          },
-        });
-
-        await this.saveSnapshot(
-          newPair,
-          pairHourData,
-          this.generateTimestamp(index),
-        );
-      }
+      await this.saveSnapshot(
+        pair,
+        pairHourData,
+        this.generateTimestamp(index),
+      );
     }
 
-    return { success: true, error: null };
+    console.log("Finished ")
+
+    return { success: true, error: null } ;
   }
 
-  private async saveSnapshot(pair, pairHourData, customTimestamp = new Date()) {
+  private async saveSnapshot(pair:Pair, pairHourData, customTimestamp = new Date()) {
     try {
       const newSnapshotPairData = this.snapshotRepository.create({
         pair: pair,
@@ -182,19 +200,19 @@ export class SnapshotsService implements OnModuleInit {
     }
   }
 
-  private async createPair(pairHourDatas): Promise<Pair> {
-    const { address, token0, token1 } = pairHourDatas[0].pair;
+  private async createPair(pair: IPair, address: string): Promise<Pair> {
+    const { token0, token1 } = pair;
     try {
-      const newPair = this.pairRepository.create({
+      const newPair = await this.pairRepository.create({
         address,
         token0,
         token1,
       });
-      await this.pairRepository.save(newPair);
-      return;
+
+      return await this.pairRepository.save(newPair);
     } catch (error) {
       // TODO: Add error handling here
-      throw new Error();
+      console.log(error);
     }
   }
 

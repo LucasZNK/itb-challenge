@@ -17,8 +17,6 @@ class Token {
   symbol: string;
 }
 
-// pair.entity.ts
-
 @ObjectType()
 @Entity()
 export class Pair {
