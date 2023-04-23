@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GraphQLClient } from 'graphql-request';
 import { THE_GRAPH_ENDPOINT } from './contants';
+import gql from 'graphql-tag';
 @Injectable()
 export class GraphQLClientService {
   private client: GraphQLClient;
@@ -17,9 +18,19 @@ export class GraphQLClientService {
     return this.client;
   }
 
-  buildPairDataQuery(pairInfoQuery, address: string) {
-   const newQuery = pairInfoQuery.replace('PAIR_ADDRESS_PLACEHOLDER', address);
-   return newQuery
+  // buildPairDataQuery(pairInfoQuery, address: string) {
+  //  const newQuery = pairInfoQuery.replace('PAIR_ADDRESS_PLACEHOLDER', address);
+  //  return newQuery
+  // }
+
+
+  buildPairDataQuery(query, address) {
+    const updatedQuery = query.loc.source.body.replace(/PAIR_ADDRESS_PLACEHOLDER/g, address);
+    return gql`${updatedQuery}`;
   }
+
+// Uso de la función
+
+
   
 }

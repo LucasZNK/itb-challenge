@@ -1,6 +1,9 @@
-export const pairInfoQuery = `query GetPairHourDatas($fromHoursAgo: Int!) {
+import gql from 'graphql-tag';
+
+export const pairInfoQuery = gql`
+query GetPairHourDatas($fromHoursAgo: Int!) {
   pairHourDatas(
-    where: { pair: PAIR_ADDRESS_PLACEHOLDER }
+    where: { pair: "PAIR_ADDRESS_PLACEHOLDER" }
     orderBy: hourStartUnix
     orderDirection: desc
     first: $fromHoursAgo

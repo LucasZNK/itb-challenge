@@ -8,6 +8,8 @@ import { GraphQLClient, Variables } from 'graphql-request';
 import { pairInfoQuery } from 'src/graphql-client/queries';
 import { initialPairs } from './constants/initial-addresses';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { DocumentNode } from 'graphql';
+
 @Injectable()
 export class SnapshotsService implements OnModuleInit {
   graphqlExternalClient: GraphQLClient;
@@ -38,7 +40,7 @@ export class SnapshotsService implements OnModuleInit {
           );
 
           let response: any = await this.fetchPairData(query, 48);
-
+            console.log(response)
           if (response) {
             await this.createPair(response.data.pairHourDatas[0]);
 
@@ -62,21 +64,15 @@ export class SnapshotsService implements OnModuleInit {
     } catch (error) {}
   }
 
-  async fetchPairData(addressPair: string, fromHoursAgo: number) {
+  async fetchPairData(query: DocumentNode, fromHoursAgo: number) {
     const params: Variables = {
       fromHoursAgo: fromHoursAgo,
     };
-
-    const query = this.graphqlClientService.buildPairDataQuery(
-      pairInfoQuery,
-      addressPair,
-    );
-
-    console.log("Generated query:");
-    console.log(query);
+  
     const data = await this.graphqlExternalClient.request(query, params);
     return data;
   }
+  
 
   @Cron(CronExpression.EVERY_HOUR)
   async getPairsInforLastHour() {
