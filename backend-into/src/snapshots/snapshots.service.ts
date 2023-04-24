@@ -40,7 +40,7 @@ export class SnapshotsService implements OnModuleInit {
     console.log('Snapshots service initialized');
 
     try {
-      initialPairs.forEach(async (address) => {
+        for (const address of initialPairs) {
         const query = this.graphqlClientService.buildPairDataQuery(
           pairInfoQuery,
           address,
@@ -102,7 +102,7 @@ export class SnapshotsService implements OnModuleInit {
             60 - difference.remainingMinutes
           } minutes.`,
         );
-      });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -208,7 +208,8 @@ export class SnapshotsService implements OnModuleInit {
   @Cron(CronExpression.EVERY_HOUR)
   async getPairsInforLastHour() {
     try {
-      initialPairs.forEach(async (address) => {
+      for (const address of initialPairs) {
+
         const pair = await this.getPairInfo(address);
 
         const query = await this.graphqlClientService.buildPairDataQuery(
@@ -219,9 +220,8 @@ export class SnapshotsService implements OnModuleInit {
         const data: IPairHourDatasResponse = await this.fetchPairData(query, 1);
         console.log(data);
         this.saveSnapshot(pair, data.pairHourDatas[0]);
-
+        }
         // const a = await this.saveSnapshot(data, pair);
-      });
     } catch (error) {
       console.log(error);
     }
@@ -312,5 +312,4 @@ export class SnapshotsService implements OnModuleInit {
     return timestamp;
   }
 
-  async findAll() {}
 }

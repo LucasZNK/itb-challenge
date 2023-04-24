@@ -29,7 +29,6 @@ export class Pair {
   @Index()
   address: string;
 
-  // Store token0 and token1 as JSON data
   @Column({ type: 'json' })
   @Field(() => Token)
   token0: Token;
