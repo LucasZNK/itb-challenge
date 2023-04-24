@@ -57,7 +57,6 @@ export class SnapshotsService implements OnModuleInit {
 
             await this.saveSnapshotsFrom48hs(response.pairHourDatas, pair);
 
-           
             return;
           } else {
             console.log('Error fetching data');
@@ -65,57 +64,59 @@ export class SnapshotsService implements OnModuleInit {
         }
 
         let latestSnapshot = await this.getLatestSnapshot(pair.id);
-        const difference =
-          this.getTimeDifference( 
-            latestSnapshot.timestamp,
-          ) 
+        const difference = this.getTimeDifference(latestSnapshot.timestamp);
 
-          // If snapshot is not up to date, but less than 2hours of difference, we fetch the last  2 hour of data
-        if (difference.differenceInHours >= 1 && difference.differenceInHours < 2) {
+        // If snapshot is not up to date, but less than 2hours of difference, we fetch the last  2 hour of data
+        if (
+          difference.differenceInHours >= 1 &&
+          difference.differenceInHours < 2
+        ) {
           // If difference btw last snapshot and now is more than 1 hour but less than 2, we fetch the last 2 hours of data
-          const data = await this.fetchPairData(query,2);
-          await this.saveSnapshot(data, pair);
+          const data = await this.fetchPairData(query, 2);
+          await this.saveSnapshot( pair , data);
         }
 
-
         // If snapshot is not up to date but more than 2 hours of diff, we fetch for last 48hs hours.
-          if (difference.differenceInHours >= 2 ) {
-            // This feature is to avoid the case when the cron job is not executed for some reason
-            // and the snapshots are not updated for less than 48hs.
-            // If the difference is more than 48hs, we fetch the last 48hs of data
-           try {
+        if (difference.differenceInHours >= 2) {
+          // This feature is to avoid the case when the cron job is not executed for some reason
+          // and the snapshots are not updated for less than 48hs.
+          // If the difference is more than 48hs, we fetch the last 48hs of data
+          try {
             const data = await this.fetchPairData(query, 48);
             await this.saveSnapshotsFrom48hs(data.pairHourDatas, pair);
-           } catch (error) {
-            console.log(`Error fetching data in difference >= 2: ${error}`)
-           }
+          } catch (error) {
+            console.log(`Error fetching data in difference >= 2: ${error}`);
           }
+        }
 
         console.log(
-          `Snapshot for pair ${
-            pair.address
-          } is up to date, saved at ${latestSnapshot.timestamp}. Current time: ${difference.currentTimestamp}. Next update will be at: ${
+          `Snapshot for pair ${pair.address} is up to date, saved at ${
+            latestSnapshot.timestamp
+          }. Current time: ${
+            difference.currentTimestamp
+          }. Next update will be at: ${
             difference.nextUpdateTime
-          }. Remaining time for next update: ${ 
+          }. Remaining time for next update: ${
             60 - difference.remainingMinutes
           } minutes.`,
         );
-        
-        
       });
     } catch (error) {
-      console.log(error) 
+      console.log(error);
     }
   }
 
   private getTimeDifference(latestSnapshotTimestamp: Date) {
     const now = new Date();
-    const differenceInMillis = now.getTime() - latestSnapshotTimestamp.getTime();
+    const differenceInMillis =
+      now.getTime() - latestSnapshotTimestamp.getTime();
     const differenceInMinutes = Math.floor(differenceInMillis / (1000 * 60));
     const differenceInHours = Math.floor(differenceInMinutes / 60);
     const remainingMinutes = differenceInMinutes % 60;
-    const nextUpdateTime = new Date(now.getTime() + (60 - remainingMinutes) * 60 * 1000);
-  
+    const nextUpdateTime = new Date(
+      now.getTime() + (60 - remainingMinutes) * 60 * 1000,
+    );
+
     return {
       differenceInMinutes,
       differenceInHours,
@@ -125,10 +126,6 @@ export class SnapshotsService implements OnModuleInit {
       nextUpdateTime,
     };
   }
-  
-  
-  
-  
 
   private async fetchPairData(
     query: DocumentNode,
@@ -161,30 +158,29 @@ export class SnapshotsService implements OnModuleInit {
 
   @Cron(CronExpression.EVERY_HOUR)
   async getPairsInforLastHour() {
-    initialPairs.forEach(async (address) => {
-      const pair = await this.getPairInfo(address);
+    try {
+      initialPairs.forEach(async (address) => {
+        const pair = await this.getPairInfo(address);
+  
 
-      const latestSnapshot = await this.getLatestSnapshot(pair.id);
-
-      const dataNeedsUpdate = this.verifySnapshotIsOlderThan1Hour(
-        latestSnapshot.timestamp,
-      );
-      if (dataNeedsUpdate) {
-        const query = this.graphqlClientService.buildPairDataQuery(
+        const query = await this.graphqlClientService.buildPairDataQuery(
           pairInfoQuery,
           address,
         );
-
-        const pair = await this.pairRepository.findOne({
-          where: { address: address },
-        });
-
-        const data = await this.fetchPairData(query, 1);
-        await this.saveSnapshot(data, pair);
-      }
-    });
+  
+        const data: IPairHourDatasResponse = await this.fetchPairData(query, 1);
+        console.log(data)
+        this.saveSnapshot(pair, data.pairHourDatas[0] );
+      
+        // const a = await this.saveSnapshot(data, pair);
+     
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
-
+  
+  
   async getLatestSnapshot(pairId: number): Promise<SnapshotPairData> {
     try {
       const latestSnapshot = await this.snapshotRepository.findOne({
@@ -220,9 +216,11 @@ export class SnapshotsService implements OnModuleInit {
 
   private async saveSnapshot(
     pair: Pair,
-    pairHourData,
+    pairHourData:IPairHourData,
     customTimestamp = new Date(),
   ) {
+
+  
     try {
       const newSnapshotPairData = this.snapshotRepository.create({
         pair: pair,
@@ -235,9 +233,14 @@ export class SnapshotsService implements OnModuleInit {
         timestamp: customTimestamp,
       });
 
-      await this.snapshotRepository.save(newSnapshotPairData);
-      console.log(`snapshot saved for ${pair.address} at ${customTimestamp} `);
-    } catch (error) {
+     console.log(newSnapshotPairData)
+
+      const  snapshot = await this.snapshotRepository.save(newSnapshotPairData);
+      console.log(
+        `snapshot saved for ${pair.address} at ${customTimestamp}  with id ${snapshot.id}`,
+      );
+     } catch (error) {
+      console.log(error)
       // TODO: Handle errors
     }
   }
