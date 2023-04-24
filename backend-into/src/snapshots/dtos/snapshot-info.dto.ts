@@ -1,5 +1,6 @@
 import { Field, InputType } from "@nestjs/graphql";
-import {IsNotEmpty, IsString, IsOptional, IsDateString} from "class-validator"
+import {IsNotEmpty, IsString, IsOptional, IsDateString, IsNumber} from "class-validator"
+
 @InputType()
 export class PairSnapshotFilterDto {
 
@@ -9,12 +10,16 @@ export class PairSnapshotFilterDto {
   
     @IsOptional()
     @IsDateString()
-    @Field()
+    @Field({nullable: true})
     startDate?: string;
   
     @IsOptional()
     @IsDateString()
-    @Field()
+    @Field({nullable: true})
     endDate?: string;
-     
+
+    @IsOptional()
+    @IsNumber()
+    @Field({nullable: true})
+    lastSnapshotsFromNow?: number;  
 }

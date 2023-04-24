@@ -38,6 +38,7 @@ type Query {
 
 input PairSnapshotFilterDto {
   pairAddress: String!
-  startDate: String!
-  endDate: String!
+  startDate: String
+  endDate: String
+  lastSnapshotsFromNow: Float
 }

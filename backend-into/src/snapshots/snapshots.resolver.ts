@@ -13,9 +13,9 @@ export class SnapshotResolver {
   async getPairSnapshotsByDateRange(
     @Args('pairSnapshotFilter', { type: () => PairSnapshotFilterDto }) pairSnapshotFilter: PairSnapshotFilterDto,
   ): Promise<SnapshotPairData[]> {
-    const { pairAddress, startDate, endDate } = pairSnapshotFilter;
-    const snaps =  await this.snapshotsService.findPairSnapshotsByDateRange(pairAddress, startDate, endDate);
-    console.log('Snaps:', JSON.stringify(snaps, null, 2));
+    const { pairAddress, startDate, endDate , lastSnapshotsFromNow} = pairSnapshotFilter;
+    console.log(pairSnapshotFilter)
+    const snaps =  await this.snapshotsService.findPairSnapshotsByDateRange(pairAddress, startDate, endDate , lastSnapshotsFromNow);
     return snaps;
   }
 }
