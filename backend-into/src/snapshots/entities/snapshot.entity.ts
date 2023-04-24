@@ -16,7 +16,7 @@ export class SnapshotPairData {
   @Field(() => Number)
   id: number;
 
-  @ManyToOne(() => Pair, (pair) => pair.snapshotPairData)
+  @ManyToOne(() => Pair, (pair) => pair.snapshotPairData, { eager: true })
   @Field(() => Pair)
   pair: Pair;
 

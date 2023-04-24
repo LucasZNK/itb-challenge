@@ -12,9 +12,11 @@ query GetPairHourDatas($fromHoursAgo: Int!) {
       id
       token0 {
         name
+        symbol
       }
       token1 {
         name
+        symbol
       }
     }
     hourlyVolumeToken0
