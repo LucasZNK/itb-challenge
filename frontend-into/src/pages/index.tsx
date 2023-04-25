@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
 import { useQuery } from '@apollo/client'
 import {GET_SNAPSHOT} from "../grahpql/operations/queries/getPairInfo";
+import { Query, QueryGetPairSnapshotsByDateRangeArgs } from '../__generated__/graphql';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -12,11 +13,16 @@ const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
 
-  const { loading, error, data, refetch } = useQuery(GET_SNAPSHOT,{
-    variables:{
-      pairAddress:"0xbc9d21652cca70f54351e3fb982c6b5dbe992a22"
-    }
+  const { loading, error, data, refetch } = useQuery<Query, QueryGetPairSnapshotsByDateRangeArgs>(GET_SNAPSHOT , {
+    variables: {
+      pairSnapshotFilter: {
+        pairAddress: '0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc',
+        lastSnapshotsFromNow: 1,
+      },
+    },
   });
+
+ 
 
   if (loading) return 'Loading...';
   if (error) return `Error! ${error.message}`;
@@ -33,6 +39,7 @@ export default function Home() {
       </Head>
       <div>
         Hello world
+        {data && data.getPairSnapshotsByDateRange[0]?.hourlyVolumeUSD}
       </div>
     </>
   )

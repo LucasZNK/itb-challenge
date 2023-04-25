@@ -1,12 +1,10 @@
-import { gql, useQuery } from '@apollo/client';
+import { gql } from '@apollo/client';
+// import { gql } from '../../../__generated__/gql';
 
-export const GET_SNAPSHOT = gql`
-  query GetPairSnapshotsByDateRange($pairAddress: String!) {
+export const GET_SNAPSHOT = gql(/* GraphQL */`
+  query GetPairSnapshotsByDateRange($pairSnapshotFilter: PairSnapshotFilterDto!) {
     getPairSnapshotsByDateRange(
-      pairSnapshotFilter: {
-        pairAddress: $pairAddress,
-        lastSnapshotsFromNow: 1
-      }
+      pairSnapshotFilter: $pairSnapshotFilter
     ) {
       id
       pair {
@@ -28,4 +26,5 @@ export const GET_SNAPSHOT = gql`
       timestamp
     }
   }
-`;
+`
+);
