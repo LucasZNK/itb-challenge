@@ -39,7 +39,7 @@ export default function Home() {
       </Head>
       <div>
         Hello world
-        {data && data.getPairSnapshotsByDateRange[0]?.hourlyVolumeUSD}
+        {data && data.getPairSnapshotsByDateRange[0]?.pair.address}
       </div>
     </>
   )
