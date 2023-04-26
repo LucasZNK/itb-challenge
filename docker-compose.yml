@@ -15,6 +15,12 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build: ./frontend-into
+    container_name: frontend-into
+    ports:
+      - '3000:3000'
+
   db:
     image: postgres:13
     container_name: postgres
@@ -23,7 +29,7 @@ services:
       - POSTGRES_PASSWORD=1234
       - POSTGRES_DB=snapshots
     ports:
-      - '5432:5432'
+      - '5478:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
 

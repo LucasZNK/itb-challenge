@@ -63,7 +63,7 @@ export class SnapshotsService implements OnModuleInit {
 
             await this.saveSnapshotsFrom48hs(response.pairHourDatas, pair);
 
-            return;
+            
           } else {
             console.log('Error fetching data');
           }
@@ -115,7 +115,7 @@ export class SnapshotsService implements OnModuleInit {
     lastSnapshotsFromNow?:number
   ): Promise<SnapshotPairData[]> {
     try {
-      console.log(`lastSnapshotsFromNow: ${lastSnapshotsFromNow}`)
+      console.log(`lastSnapshotsFromNow: ${pairAddress}`)
       const pair = await this.getPairInfo(pairAddress);
 
       if (!pair) {
@@ -128,7 +128,6 @@ export class SnapshotsService implements OnModuleInit {
       console.log(pair);
       if (lastSnapshotsFromNow){
           // get the last ${.astSnapshotsFromNow} snapshots
-          console.log("ENTRE")
            const snapshots = await this.snapshotRepository.find({
              where: {
                pair: { id: pair.id },
