@@ -41,7 +41,7 @@ export type PairSnapshotFilterDto = {
 
 export type Query = {
   __typename?: "Query";
-  getPairSnapshotsByDateRange: Array<Maybe<SnapshotPairData>>;
+  getPairSnapshotsByDateRange: Array<SnapshotPairData>;
 };
 
 export type QueryGetPairSnapshotsByDateRangeArgs = {

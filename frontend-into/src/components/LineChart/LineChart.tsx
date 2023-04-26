@@ -36,11 +36,12 @@ export const options = {
   },
 };
 
-function getHourlyVolumeUSD(snapshotData: any) {
-  return snapshotData.map((item: any) => item.hourlyVolumeUSD);
+function getHourlyVolumeUSD(snapshotData: SnapshotPairData[]) {
+  // summ for cards
+  return snapshotData.map((item: SnapshotPairData) => item.hourlyVolumeUSD);
 }
 
-function generateLabels(hours: any) {
+function generateLabels(hours: number) {
   const labels = [];
   for (let i = 0; i < hours; i++) {
     labels.push(`${i}h`);
@@ -48,7 +49,7 @@ function generateLabels(hours: any) {
   return labels;
 }
 
-export const data = (snapshotData: any, hours: any) => {
+export const data = (snapshotData: SnapshotPairData[], hours: number) => {
   const labels = generateLabels(hours);
   return {
     labels,
@@ -68,7 +69,7 @@ interface Props {
   hours: number;
 }
 
-export function LineChart({ snapshotData, hours = 40 }: Props) {
+export function LineChart({ snapshotData, hours = 24 }: Props) {
   console.log(snapshotData.length);
   return (
     <div className={styles.chartContainer}>
