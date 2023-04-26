@@ -20,32 +20,36 @@ export class SnapshotPairData {
   @Field(() => Pair)
   pair: Pair;
 
-  @Column()
-  @Field(() => String)
-  hourlyVolumeToken0: string;
+  @Column({ type: 'float' })
+  @Field(() => Number)
+  hourlyVolumeToken0: number;
 
-  @Column()
-  @Field(() => String)
-  hourlyVolumeToken1: string;
+  @Column({ type: 'float' })
+  @Field(() => Number)
+  hourlyVolumeToken1: number;
 
-  @Column()
-  @Field(() => String)
-  hourlyVolumeUSD: string;
+  @Column({ type: 'float' })
+  @Field(() => Number)
+  hourlyVolumeUSD: number;
 
-  @Column()
-  @Field(() => String)
-  reserve0: string;
+  @Column({ type: 'float' })
+  @Field(() => Number)
+  reserve0: number;
 
-  @Column()
-  @Field(() => String)
-  reserve1: string;
+  @Column({ type: 'float' })
+  @Field(() => Number)
+  reserve1: number;
 
-  @Column()
-  @Field(() => String)
-  reserveUSD: string;
+  @Column({ type: 'float' })
+  @Field(() => Number)
+  reserveUSD: number;
 
   @Column({ type: 'timestamptz' })
   @Field(() => Date)
   @Index()
   timestamp: Date;
+
+  @Column({ type: 'float' })
+  @Field(() => Number)
+  hourlyPairFees: number;
 }

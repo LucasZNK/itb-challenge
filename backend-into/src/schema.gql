@@ -18,13 +18,14 @@ type Pair {
 type SnapshotPairData {
   id: Float!
   pair: Pair!
-  hourlyVolumeToken0: String!
-  hourlyVolumeToken1: String!
-  hourlyVolumeUSD: String!
-  reserve0: String!
-  reserve1: String!
-  reserveUSD: String!
+  hourlyVolumeToken0: Float!
+  hourlyVolumeToken1: Float!
+  hourlyVolumeUSD: Float!
+  reserve0: Float!
+  reserve1: Float!
+  reserveUSD: Float!
   timestamp: DateTime!
+  hourlyPairFees: Float!
 }
 
 """

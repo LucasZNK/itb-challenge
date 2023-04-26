@@ -1,11 +1,11 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 // import { gql } from '../../../__generated__/gql';
 
-export const GET_SNAPSHOT = gql(/* GraphQL */`
-  query GetPairSnapshotsByDateRange($pairSnapshotFilter: PairSnapshotFilterDto!) {
-    getPairSnapshotsByDateRange(
-      pairSnapshotFilter: $pairSnapshotFilter
-    ) {
+export const GET_SNAPSHOT = gql(/* GraphQL */ `
+  query GetPairSnapshotsByDateRange(
+    $pairSnapshotFilter: PairSnapshotFilterDto!
+  ) {
+    getPairSnapshotsByDateRange(pairSnapshotFilter: $pairSnapshotFilter) {
       id
       pair {
         id
@@ -24,7 +24,7 @@ export const GET_SNAPSHOT = gql(/* GraphQL */`
       reserve1
       reserveUSD
       timestamp
+      hourlyPairFees
     }
   }
-`
-);
+`);

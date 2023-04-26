@@ -25,6 +25,7 @@ import { Pair } from './entities/pair.entity';
 export class SnapshotsService implements OnModuleInit {
   graphqlExternalClient: GraphQLClient;
   initialPairs;
+  protocolFee;
   constructor(
     @InjectRepository(SnapshotPairData)
     private snapshotRepository: Repository<SnapshotPairData>,
@@ -34,13 +35,14 @@ export class SnapshotsService implements OnModuleInit {
   ) {
     this.graphqlExternalClient = this.graphqlClientService.getClient();
     this.initialPairs = initialPairs;
+    this.protocolFee = 0.003;
   }
 
   async onModuleInit() {
     console.log('Snapshots service initialized');
 
     try {
-        for (const address of initialPairs) {
+      for (const address of initialPairs) {
         const query = this.graphqlClientService.buildPairDataQuery(
           pairInfoQuery,
           address,
@@ -62,8 +64,6 @@ export class SnapshotsService implements OnModuleInit {
             );
 
             await this.saveSnapshotsFrom48hs(response.pairHourDatas, pair);
-
-            
           } else {
             console.log('Error fetching data');
           }
@@ -86,9 +86,8 @@ export class SnapshotsService implements OnModuleInit {
           // This feature is to avoid the case when the cron job is not executed for some reason
           // and the snapshots are not updated for less than 48hs.
           // If the difference is more than 48hs, we fetch the last 48hs of data
-            const data = await this.fetchPairData(query, 48);
-            await this.saveSnapshotsFrom48hs(data.pairHourDatas, pair);
-       
+          const data = await this.fetchPairData(query, 48);
+          await this.saveSnapshotsFrom48hs(data.pairHourDatas, pair);
         }
 
         console.log(
@@ -108,14 +107,21 @@ export class SnapshotsService implements OnModuleInit {
     }
   }
 
+  async updateProtocolFee(newProtocolFee: number, admin: boolean) {
+    if (!admin) {
+      // Real auth validation
+      return;
+    }
+    this.protocolFee = newProtocolFee;
+  }
   async findPairSnapshotsByDateRange(
     pairAddress: string,
     startDate?: string,
     endDate?: string,
-    lastSnapshotsFromNow?:number
+    lastSnapshotsFromNow?: number,
   ): Promise<SnapshotPairData[]> {
     try {
-      console.log(`lastSnapshotsFromNow: ${pairAddress}`)
+      console.log(`lastSnapshotsFromNow: ${pairAddress}`);
       const pair = await this.getPairInfo(pairAddress);
 
       if (!pair) {
@@ -126,17 +132,17 @@ export class SnapshotsService implements OnModuleInit {
       const endDateObj = new Date(endDate);
 
       console.log(pair);
-      if (lastSnapshotsFromNow){
-          // get the last ${.astSnapshotsFromNow} snapshots
-           const snapshots = await this.snapshotRepository.find({
-             where: {
-               pair: { id: pair.id },
-             },
-             order: { timestamp: 'DESC' },
-             take:lastSnapshotsFromNow}
-            );
-            console.log(snapshots.length)
-            return snapshots;
+      if (lastSnapshotsFromNow) {
+        // get the last ${.astSnapshotsFromNow} snapshots
+        const snapshots = await this.snapshotRepository.find({
+          where: {
+            pair: { id: pair.id },
+          },
+          order: { timestamp: 'DESC' },
+          take: lastSnapshotsFromNow,
+        });
+        console.log(snapshots.length);
+        return snapshots;
       } else {
         const snapshots = await this.snapshotRepository.find({
           where: {
@@ -145,10 +151,9 @@ export class SnapshotsService implements OnModuleInit {
           },
           order: { timestamp: 'DESC' },
         });
-  
+
         return snapshots;
       }
-   
     } catch (error) {
       throw new HttpException(`Not found ${error}`, HttpStatus.NOT_FOUND);
     }
@@ -208,7 +213,6 @@ export class SnapshotsService implements OnModuleInit {
   async getPairsInforLastHour() {
     try {
       for (const address of initialPairs) {
-
         const pair = await this.getPairInfo(address);
 
         const query = await this.graphqlClientService.buildPairDataQuery(
@@ -219,8 +223,8 @@ export class SnapshotsService implements OnModuleInit {
         const data: IPairHourDatasResponse = await this.fetchPairData(query, 1);
         console.log(data);
         this.saveSnapshot(pair, data.pairHourDatas[0]);
-        }
-        // const a = await this.saveSnapshot(data, pair);
+      }
+      // const a = await this.saveSnapshot(data, pair);
     } catch (error) {
       console.log(error);
     }
@@ -265,20 +269,26 @@ export class SnapshotsService implements OnModuleInit {
     customTimestamp = new Date(),
   ) {
     try {
-      const newSnapshotPairData = this.snapshotRepository.create({
-        pair: pair,
-        hourlyVolumeToken0: pairHourData.hourlyVolumeToken0,
-        hourlyVolumeToken1: pairHourData.hourlyVolumeToken1,
-        hourlyVolumeUSD: pairHourData.hourlyVolumeUSD,
-        reserve0: pairHourData.reserve0,
-        reserve1: pairHourData.reserve1,
-        reserveUSD: pairHourData.reserveUSD,
-        timestamp: customTimestamp,
-      });
-
-      console.log(newSnapshotPairData);
+      const newSnapshotPairData = new SnapshotPairData();
+      newSnapshotPairData.pair = pair;
+      newSnapshotPairData.hourlyVolumeToken0 = parseFloat(
+        pairHourData.hourlyVolumeToken0,
+      );
+      newSnapshotPairData.hourlyVolumeToken1 = parseFloat(
+        pairHourData.hourlyVolumeToken1,
+      );
+      newSnapshotPairData.hourlyVolumeUSD = parseFloat(
+        pairHourData.hourlyVolumeUSD,
+      );
+      newSnapshotPairData.reserve0 = parseFloat(pairHourData.reserve0);
+      newSnapshotPairData.reserve1 = parseFloat(pairHourData.reserve1);
+      newSnapshotPairData.reserveUSD = parseFloat(pairHourData.reserveUSD);
+      newSnapshotPairData.timestamp = customTimestamp;
+      newSnapshotPairData.hourlyPairFees =
+        parseFloat(pairHourData.hourlyVolumeUSD) * this.protocolFee;
 
       const snapshot = await this.snapshotRepository.save(newSnapshotPairData);
+
       console.log(
         `snapshot saved for ${pair.address} at ${customTimestamp}  with id ${snapshot.id}`,
       );
@@ -310,5 +320,4 @@ export class SnapshotsService implements OnModuleInit {
     const timestamp = new Date(now.getTime() - hourData * 60 * 60 * 1000);
     return timestamp;
   }
-
 }
