@@ -1,4 +1,13 @@
 .contentContainer {
   padding: 2rem 4rem;
-  height: 100vh;
+}
+
+@media screen and (max-width: 630px) {
+  .contentContainer {
+    padding: 0 1rem 0 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
 }

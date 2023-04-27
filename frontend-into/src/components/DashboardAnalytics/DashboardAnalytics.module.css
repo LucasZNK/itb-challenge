@@ -1,0 +1,39 @@
+.rangeLabel {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 18px;
+  color: #333335;
+  display: flex;
+  align-items: center;
+  padding-bottom: 10px;
+}
+
+.rangeLabel select {
+  margin-left: 1rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #eaeaea;
+  background-color: #f9f9fb;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 18px;
+  color: #333335;
+}
+
+.rangeLabel select:focus {
+  outline: none;
+  border-color: #4d90fe;
+  box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25);
+}
+
+.rangeLabel select:hover {
+  border-color: #c6c6c6;
+}

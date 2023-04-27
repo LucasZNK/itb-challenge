@@ -1,5 +1,6 @@
 .chartContainer {
   display: flex;
+  align-items: flex-start;
   background-color: #c0c0c5;
   height: 451px;
   background: #ffffff;

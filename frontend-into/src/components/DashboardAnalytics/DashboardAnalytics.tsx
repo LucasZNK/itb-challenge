@@ -8,7 +8,7 @@ import {
 import { LineChart } from "@/components/LineChart/LineChart";
 import { useEffect, useState } from "react";
 import CardsInfo from "../CardsInfo/CardsInfo";
-
+import styles from "./DashboardAnalytics.module.css";
 interface DashboardDataProps {}
 
 const DashboardAnalytics: React.FC<DashboardDataProps> = () => {
@@ -46,7 +46,7 @@ const DashboardAnalytics: React.FC<DashboardDataProps> = () => {
 
   return (
     <>
-      <label>
+      <label className={styles.rangeLabel}>
         Select range:
         <select
           value={selectedHours}

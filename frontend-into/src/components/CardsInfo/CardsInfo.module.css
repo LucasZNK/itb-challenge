@@ -17,7 +17,8 @@
 
 .cardContainer {
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .cardStyles {
@@ -26,8 +27,25 @@
   height: 70px;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 630px) {
   .contentContainer {
+    display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .cardContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .cardStyles {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 }
