@@ -56,19 +56,19 @@ function generateLabels(hours: number) {
   return labels;
 }
 
-function getHourlyAPR(snapshotData: SnapshotPairData[]) {
+function getHourlyAPR(snapshotData: SnapshotPairData[], period: number) {
+  const annualizationFactor = (24 * 365) / period;
   return snapshotData.map((item: SnapshotPairData) => {
     const hourlyFees = item.hourlyPairFees;
     const reserveUSD = item.reserveUSD;
 
-    const apr = (hourlyFees / (reserveUSD / 2)) * 100 * 24 * 365;
-    console.log(item.id, item.hourlyVolumeUSD, apr);
+    const apr = (hourlyFees / reserveUSD) * 100 * annualizationFactor;
     return apr;
   });
 }
 
-export const data = (snapshotData: SnapshotPairData[], hours: number) => {
-  const labels = generateLabels(hours);
+export const data = (snapshotData: SnapshotPairData[], period: number) => {
+  const labels = generateLabels(period);
   return {
     labels,
     datasets: [
@@ -80,7 +80,7 @@ export const data = (snapshotData: SnapshotPairData[], hours: number) => {
       // },
       {
         label: "Hourly APR",
-        data: getHourlyAPR(snapshotData),
+        data: getHourlyAPR(snapshotData, period),
         borderColor: "#2E71F0",
         backgroundColor: "#2E71F0",
       },
@@ -94,7 +94,6 @@ interface Props {
 }
 
 export function LineChart({ snapshotData, hours = 24 }: Props) {
-  console.log(snapshotData.length);
   return (
     <div className={styles.chartContainer}>
       <Line options={options} data={data(snapshotData, hours)} />
