@@ -31,8 +31,6 @@ const CardsInfo = ({ snapshotData, period }: Props) => {
       return;
     }
 
-    console.log(`snapshotData`, snapshotData);
-
     function calculateStats() {
       let calculatedVolume = 0;
       let calculatedFee = 0;
@@ -69,16 +67,19 @@ const CardsInfo = ({ snapshotData, period }: Props) => {
           className={styles.cardStyles}
           title={`Volume last ${period} hours`}
           value={formatValue(volume)}
+          showTransition={true}
         />
         <Card
           className={styles.cardStyles}
           title={`Fees last ${period} hours`}
           value={formatValue(fees)}
+          showTransition={true}
         />
         <Card
           className={styles.cardStyles}
           title={`APR ${period} hours`}
           value={formatPercentage(apr)}
+          showTransition={true}
         />
       </div>
     </div>

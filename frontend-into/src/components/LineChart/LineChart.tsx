@@ -43,11 +43,6 @@ export const options = {
   },
 };
 
-function getHourlyVolumeUSD(snapshotData: SnapshotPairData[]) {
-  // summ for cards
-  return snapshotData.map((item: SnapshotPairData) => item.hourlyVolumeUSD);
-}
-
 function generateLabels(hours: number) {
   const labels = [];
   for (let i = 0; i < hours; i++) {
@@ -72,12 +67,6 @@ export const data = (snapshotData: SnapshotPairData[], period: number) => {
   return {
     labels,
     datasets: [
-      // {
-      //   label: "Hourly Volume USD",
-      //   data: getHourlyVolumeUSD(snapshotData),
-      //   borderColor: "#2E71F0",
-      //   backgroundColor: "#2E71F0",
-      // },
       {
         label: "Hourly APR",
         data: getHourlyAPR(snapshotData, period),
