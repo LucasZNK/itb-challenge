@@ -25,13 +25,20 @@ ChartJS.register(
 export const options = {
   responsive: true,
   maintainAspectRatio: false,
+  scales: {
+    y: {
+      ticks: {
+        autoSkip: false,
+      },
+    },
+  },
   plugins: {
     legend: {
       position: "top" as const,
     },
     title: {
       display: true,
-      text: "Hourly Volume USD Chart",
+      text: "Hourly APR Chart",
     },
   },
 };
@@ -49,14 +56,31 @@ function generateLabels(hours: number) {
   return labels;
 }
 
+function getHourlyAPR(snapshotData: SnapshotPairData[]) {
+  return snapshotData.map((item: SnapshotPairData) => {
+    const hourlyFees = item.hourlyPairFees;
+    const reserveUSD = item.reserveUSD;
+
+    const apr = (hourlyFees / (reserveUSD / 2)) * 100 * 24 * 365;
+    console.log(item.id, item.hourlyVolumeUSD, apr);
+    return apr;
+  });
+}
+
 export const data = (snapshotData: SnapshotPairData[], hours: number) => {
   const labels = generateLabels(hours);
   return {
     labels,
     datasets: [
+      // {
+      //   label: "Hourly Volume USD",
+      //   data: getHourlyVolumeUSD(snapshotData),
+      //   borderColor: "#2E71F0",
+      //   backgroundColor: "#2E71F0",
+      // },
       {
-        label: "Hourly Volume USD",
-        data: getHourlyVolumeUSD(snapshotData),
+        label: "Hourly APR",
+        data: getHourlyAPR(snapshotData),
         borderColor: "#2E71F0",
         backgroundColor: "#2E71F0",
       },
