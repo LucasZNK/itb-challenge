@@ -14,10 +14,9 @@ const Layout = ({ children }: LayoutProps) => {
         style={{
           display: "flex",
           height: "100vh",
-          backgroundColor: "#FFFFFF",
         }}
       >
-        <Sidebar style={{ width: "63px" }}>
+        <Sidebar defaultCollapsed={true} collapsedWidth="63px" width="100px">
           <Menu>
             <MenuItem className="menu1">
               <h2>QUICKPAY</h2>
@@ -31,11 +30,11 @@ const Layout = ({ children }: LayoutProps) => {
             <MenuItem> Logout </MenuItem>
           </Menu>
         </Sidebar>
-        <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+        >
           <Navbar />
-          <div style={{ flexGrow: 1, backgroundColor: "#E5E5E5" }}>
-            {children}
-          </div>
+          <div style={{ backgroundColor: "#F9F9FB" }}>{children}</div>
         </div>
       </div>
     </ProSidebarProvider>

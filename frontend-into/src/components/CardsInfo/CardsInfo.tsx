@@ -62,11 +62,25 @@ const CardsInfo = ({ snapshotData, period }: Props) => {
   };
 
   return (
-    <div className={styles.cardsContainer}>
-      <h1>Metrics for period {period}</h1>
-      <Card title={`Volume last ${period} hours`}>{formatValue(volume)}</Card>
-      <Card title={`Fees last ${period} hours`}>${formatValue(fees)}</Card>
-      <Card title={`APR ${period} hours`}>{formatPercentage(apr)}</Card>
+    <div className={styles.contentContainer}>
+      <span className={styles.sectionTitle}>Metrics for period {period} </span>
+      <div className={styles.cardContainer}>
+        <Card
+          className={styles.cardStyles}
+          title={`Volume last ${period} hours`}
+          value={formatValue(volume)}
+        />
+        <Card
+          className={styles.cardStyles}
+          title={`Fees last ${period} hours`}
+          value={formatValue(fees)}
+        />
+        <Card
+          className={styles.cardStyles}
+          title={`APR ${period} hours`}
+          value={formatPercentage(apr)}
+        />
+      </div>
     </div>
   );
 };

@@ -1,11 +1,25 @@
 /* Navbar.module.css */
 .navbar {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   padding: 0 1rem;
-  height: 60px;
+  min-height: 60px;
   background-color: #ffff;
+  width: 100%;
+}
+
+.searchBox {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+
+  align-items: center;
+  width: 351px;
+  height: 40px;
+  background: #f9f9fb;
+  border-radius: 6px;
 }
 
 .title {
@@ -17,38 +31,43 @@
   line-height: 24px;
 }
 
-.searchBox {
-  position: relative;
-  width: 351px;
-  height: 40px;
-  background: #f9f9fb;
-  border-radius: 6px;
-}
-
 .inputText {
   background-color: #f9f9fb;
+  width: 100%;
+  outline: none;
+  border: none;
 }
+
 .searchText {
-  position: absolute;
-  left: 12px;
+  border: none;
+  background-color: #f9f9fb;
+
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
+  /* left: 12px;
   top: 12px;
   font-family: "Inter";
   font-style: normal;
   font-weight: 500;
   font-size: 14px;
   line-height: 17px;
-  color: #c0c0c5;
+  color: #c0c0c5; */
 }
 
 .searchIcon {
+  padding: 14px 8px 14px 13px;
+}
+
+/* .searchIcon {
   position: absolute;
   right: 12px;
   top: 12px;
-}
-
+} */
+/* 
 @media (max-width: 992px) {
   .searchBox {
     width: 100%;
     margin-bottom: 1rem;
   }
-}
+} */

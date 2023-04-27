@@ -8,12 +8,14 @@ const Navbar = () => {
     <div className={styles.navbar}>
       <div className={styles.title}>Dashboard</div>
       <div className={styles.searchBox}>
+        <div className={styles.searchIcon}>
+          <AiOutlineSearch />
+        </div>
         <input
-          className={styles.searchText}
+          className={styles.inputText}
           type="text"
           placeholder="Search..."
         />
-        <AiOutlineSearch className={styles.searchIcon} />
       </div>
     </div>
   );

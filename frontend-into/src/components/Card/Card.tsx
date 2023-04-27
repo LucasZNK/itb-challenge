@@ -1,14 +1,21 @@
 import React from "react";
+import classnames from "classnames";
+import styles from "./Card.module.css";
 
 interface Props {
   title: string;
-  children: React.ReactNode;
+  value: string;
+  className?: string;
 }
-const Card = ({ title, children }: Props) => {
+const Card = ({ title, value, className }: Props) => {
+  const cardClasses = classnames(styles.cardContainer, className);
+  const titleClasses = classnames(styles.cardTitle, className);
+  const contentClasses = classnames(styles.cardContent, className);
+
   return (
-    <div>
-      <h1>{title}</h1>
-      {children}
+    <div className={cardClasses}>
+      <span className={titleClasses}>{title}</span>
+      <span className={contentClasses}>{value}</span>
     </div>
   );
 };

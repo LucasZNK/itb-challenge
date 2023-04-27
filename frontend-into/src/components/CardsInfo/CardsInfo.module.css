@@ -1,0 +1,33 @@
+.sectionTitle {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 800;
+  font-size: 1rem;
+  line-height: 18px;
+
+  color: #333335;
+  margin-bottom: 10px;
+}
+
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.cardContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.cardStyles {
+  margin-right: 10px;
+  width: 206px;
+  height: 70px;
+}
+
+@media screen and (max-width: 768px) {
+  .contentContainer {
+    flex-direction: column;
+  }
+}
