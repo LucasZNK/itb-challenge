@@ -13,10 +13,11 @@ Apollo Client (Frontend)
 GraphQL (Frontend and Backend)
 Typescript (Frontend and Backend)
 
-## Prerequisites
-To run the project, make sure you have Docker installed on your machine.
+## Prerequisites (DOCKER SETUP RECOMMENDED)
+To run the project, make sure you have Docker installed on your machine. Or you can setup all manually for development (last section).
 
-## Installation Instructions
+
+## Installation Instructions 
    1. Clone this repository to your local machine.
 
    2. Navigate to the project folder and run the following command:
@@ -29,6 +30,8 @@ This will create and run Docker containers for the frontend, backend, and databa
 Once the containers are up and running, the frontend will be available at http://localhost:3000 and the backend at http://localhost:4000.
 Project Structure
 The project is divided into two main parts: frontend and backend.
+
+https://user-images.githubusercontent.com/57494138/235178849-a1f881fc-d65c-43e3-8548-e75b860b15f5.mp4
 
 ## Frontend (frontend-into)
 The frontend is built with Next.js and uses Apollo Client for communication with the backend. Additionally, it uses Chart.js for creating charts and React Icons for icons. The GraphQL Codegen configuration is located in codegen.yml.
