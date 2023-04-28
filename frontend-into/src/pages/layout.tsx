@@ -3,6 +3,9 @@ import Navbar from "@/components/Navbar/Navbar";
 import { ProSidebarProvider } from "react-pro-sidebar";
 import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import styles from "./layout.module.css";
+import Image from "next/image";
+
+import logo from "../../public/svg/logo.svg";
 
 interface LayoutProps {
   children: ReactNode;
@@ -40,15 +43,8 @@ const Layout = ({ children }: LayoutProps) => {
         >
           <Menu>
             <MenuItem className="menu1">
-              <h2>Into the blocks</h2>
+              <Image priority src={logo} alt="Itb logo" />
             </MenuItem>
-            <MenuItem> Dashboard </MenuItem>
-            <MenuItem> Invoices </MenuItem>
-            <MenuItem> Charts </MenuItem>
-            <MenuItem> Wallets </MenuItem>
-            <MenuItem> Transactions </MenuItem>
-            <MenuItem> Settings </MenuItem>
-            <MenuItem> Logout </MenuItem>
           </Menu>
         </Sidebar>
         <div className={styles.mainContent}>
