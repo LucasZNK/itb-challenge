@@ -1,3 +1,17 @@
+# If I had more time to work on the application
+
+There are several things I would do differently to improve its quality and efficiency. Below, I detail some of the tasks that I consider most important:
+
+Testing: Although the application was completed without any issues, automated tests could not be included to ensure its proper functioning. If I had more time, I would like to add unit and integration tests that verify the functioning of each of the application's features.
+
+Migrations: Although a functional database could be created for the application, a production version could not be created. If I had more time, I would like to prepare the production database and add database migration functionality to facilitate the update process.
+
+Better code organization: Although the application works correctly, the code could be organized more efficiently to facilitate its maintenance and scalability. If I had more time, I would like to refactor the code to separate the functionalities into smaller and easier to maintain modules.
+
+End-to-end testing: In addition to unit and integration testing, I would like to add end-to-end tests that simulate user behavior in the application. These tests would help detect possible integration issues between different parts of the application.
+
+User interface improvement: Although the application is functional, more work is needed on the user interface to make it more attractive and user-friendly. If I had more time, I would like to work on improving the user experience and add more visual elements to make the application more appealing.
+
 # Functionality and behavior of the SnapshotsService application
 
 ## Description
@@ -24,11 +38,11 @@ The application handles exceptions and errors appropriately, providing detailed 
 
 ## Main entities:
 
-- Pair: Represents a trading pair and contains information about the two cryptocurrencies that compose it (token0 and token1) and their address on the blockchain.
+`Pair`: Represents a trading pair and contains information about the two cryptocurrencies that compose it (token0 and token1) and their address on the blockchain.
 
-- SnapshotPairData: Represents a snapshot of the trading pair data at a specific time, including token volumes, reserves, and fees.
+`SnapshotPairData`: Represents a snapshot of the trading pair data at a specific time, including token volumes, reserves, and fees.
 
-- The application uses a database with two main entities: Pair and SnapshotPairData. Both entities are related to each other through a one-to-many (OneToMany) relationship. Let's look in detail at how these entities are structured and how they relate.
+The application uses a database with two main entities: Pair and SnapshotPairData. Both entities are related to each other through a one-to-many (OneToMany) relationship. Let's look in detail at how these entities are structured and how they relate.
 
 ## Pair Entity:
 
