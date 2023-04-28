@@ -2,7 +2,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { SnapshotPairData } from './entities/snapshot.entity';
@@ -38,6 +37,7 @@ export class SnapshotsService implements OnModuleInit {
     this.protocolFee = 0.003;
   }
 
+  // This method is called when the service is initialized.
   async onModuleInit() {
     console.log('Snapshots service initialized');
 
@@ -68,7 +68,7 @@ export class SnapshotsService implements OnModuleInit {
             console.log('Error fetching data');
           }
         }
-        let latestSnapshot = await this.getLatestSnapshot(pair.id);
+        const latestSnapshot = await this.getLatestSnapshot(pair.id);
         const difference = this.getTimeDifference(latestSnapshot.timestamp);
 
         // If snapshot is not up to date, but less than 2hours of difference, we fetch the last  2 hour of data
@@ -103,10 +103,14 @@ export class SnapshotsService implements OnModuleInit {
         );
       }
     } catch (error) {
-      console.log(error);
+      throw new HttpException(
+        `Error initializing module: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
+  // Updates the protocol fee if the admin flag is set.
   async updateProtocolFee(newProtocolFee: number, admin: boolean) {
     if (!admin) {
       // Real auth validation
@@ -114,6 +118,8 @@ export class SnapshotsService implements OnModuleInit {
     }
     this.protocolFee = newProtocolFee;
   }
+
+  // Finds snapshots for a given pair address in a specific date range.
   async findPairSnapshotsByDateRange(
     pairAddress: string,
     startDate?: string,
@@ -158,6 +164,7 @@ export class SnapshotsService implements OnModuleInit {
     }
   }
 
+  // Returns the difference in hours, minutes, and seconds between two timestamps.
   private getTimeDifference(latestSnapshotTimestamp: Date) {
     const now = new Date();
     const differenceInMillis =
@@ -179,6 +186,7 @@ export class SnapshotsService implements OnModuleInit {
     };
   }
 
+  // Fetches data for a pair from the GraphQL API.
   private async fetchPairData(
     query: DocumentNode,
     fromHoursAgo: number,
@@ -191,11 +199,10 @@ export class SnapshotsService implements OnModuleInit {
     return data;
   }
 
+  // Retrieves pair information from the database using the pair's address.
   private async getPairInfo(address: string): Promise<Pair> {
-    // return pair if is present or null if not
-
     try {
-      let pair = await this.pairRepository.findOne({
+      const pair = await this.pairRepository.findOne({
         where: { address: address },
       });
 
@@ -204,10 +211,14 @@ export class SnapshotsService implements OnModuleInit {
       }
       return pair;
     } catch (error) {
-      console.log(error);
+      throw new HttpException(
+        `Error getting pair info: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
+  // Fetches data for pairs from the last hour using a cron job.
   @Cron(CronExpression.EVERY_HOUR)
   async getPairsInforLastHour() {
     try {
@@ -225,10 +236,14 @@ export class SnapshotsService implements OnModuleInit {
       }
       // const a = await this.saveSnapshot(data, pair);
     } catch (error) {
-      console.log(error);
+      throw new HttpException(
+        `Error saving snapshot: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
+  // Retrieves the latest snapshot for a given pair ID.
   async getLatestSnapshot(pairId: number): Promise<SnapshotPairData> {
     try {
       const latestSnapshot = await this.snapshotRepository.findOne({
@@ -237,10 +252,14 @@ export class SnapshotsService implements OnModuleInit {
       });
       return latestSnapshot;
     } catch (error) {
-      console.log(error);
+      throw new HttpException(
+        `Error saving snapshot: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
+  // Saves snapshots from the last 48 hours for a given pair.
   private async saveSnapshotsFrom48hs(
     pairHourDatas: IPairHourData[],
     pair: Pair,
@@ -262,6 +281,7 @@ export class SnapshotsService implements OnModuleInit {
     return { success: true, error: null };
   }
 
+  // Saves a single snapshot for a given pair.
   private async saveSnapshot(
     pair: Pair,
     pairHourData: IPairHourData,
@@ -292,11 +312,14 @@ export class SnapshotsService implements OnModuleInit {
         `snapshot saved for ${pair.address} at ${customTimestamp}  with id ${snapshot.id}`,
       );
     } catch (error) {
-      console.log(error);
-      // TODO: Handle errors
+      throw new HttpException(
+        `Error saving snapshot: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
+  // Creates a new pair entity in the database.
   private async createPair(pair: IPair, address: string): Promise<Pair> {
     const { token0, token1 } = pair;
     try {
@@ -308,11 +331,14 @@ export class SnapshotsService implements OnModuleInit {
 
       return await this.pairRepository.save(newPair);
     } catch (error) {
-      // TODO: Add error handling here
-      console.log(error);
+      throw new HttpException(
+        `Error creating pair: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
+  // Generates a timestamp based on the hour data provided.
   private generateTimestamp(hourData: number) {
     // The graph returns the data without timestamp, so we need to generate it
     const now = new Date();
