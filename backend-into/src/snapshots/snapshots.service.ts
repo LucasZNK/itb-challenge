@@ -141,7 +141,6 @@ export class SnapshotsService implements OnModuleInit {
           order: { timestamp: 'DESC' },
           take: lastSnapshotsFromNow,
         });
-        console.log(snapshots.length);
         return snapshots;
       } else {
         const snapshots = await this.snapshotRepository.find({

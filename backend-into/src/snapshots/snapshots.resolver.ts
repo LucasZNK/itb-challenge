@@ -8,14 +8,19 @@ import { PairSnapshotFilterDto } from './dtos/snapshot-info.dto';
 export class SnapshotResolver {
   constructor(private readonly snapshotsService: SnapshotsService) {}
 
- 
   @Query(() => [SnapshotPairData], { nullable: 'items' })
   async getPairSnapshotsByDateRange(
-    @Args('pairSnapshotFilter', { type: () => PairSnapshotFilterDto }) pairSnapshotFilter: PairSnapshotFilterDto,
+    @Args('pairSnapshotFilter', { type: () => PairSnapshotFilterDto })
+    pairSnapshotFilter: PairSnapshotFilterDto,
   ): Promise<SnapshotPairData[]> {
-    const { pairAddress, startDate, endDate , lastSnapshotsFromNow} = pairSnapshotFilter;
-    console.log(pairSnapshotFilter)
-    const snaps =  await this.snapshotsService.findPairSnapshotsByDateRange(pairAddress, startDate, endDate , lastSnapshotsFromNow);
+    const { pairAddress, startDate, endDate, lastSnapshotsFromNow } =
+      pairSnapshotFilter;
+    const snaps = await this.snapshotsService.findPairSnapshotsByDateRange(
+      pairAddress,
+      startDate,
+      endDate,
+      lastSnapshotsFromNow,
+    );
     return snaps;
   }
 }

@@ -9,58 +9,51 @@ import { LineChart } from "@/components/LineChart/LineChart";
 import { useEffect, useState } from "react";
 import CardsInfo from "../CardsInfo/CardsInfo";
 import styles from "./DashboardAnalytics.module.css";
-interface DashboardDataProps {}
+import { initialPairs } from "../../constants/pairs";
+import { useDashboardAnalytics } from "@/hooks/useDashboardAnalytics";
 
-const DashboardAnalytics: React.FC<DashboardDataProps> = () => {
-  const [selectedHours, setSelectedHours] = useState(24);
-  const [snapshots, setSnapshots] = useState<SnapshotPairData[]>([]);
-  const { loading, error, data, refetch } = useQuery<
-    Query,
-    QueryGetPairSnapshotsByDateRangeArgs
-  >(GET_SNAPSHOT, {
-    variables: {
-      pairSnapshotFilter: {
-        pairAddress: "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc",
-        lastSnapshotsFromNow: 24,
-      },
-    },
+/**
+ * DashboardAnalytics component that displays snapshot data for selected pair and time range.
+ */
+const DashboardAnalytics = () => {
+  const {
+    loading,
+    error,
+    selectedHours,
+    selectedPair,
+    snapshots,
+    onHoursChange,
+    onPairChange,
+  } = useDashboardAnalytics({
+    initialPairAddress: initialPairs[0],
+    fromRange: 24,
   });
-
-  useEffect(() => {
-    if (!data && loading) {
-      return;
-    }
-    const filteredSnapshots = data!.getPairSnapshotsByDateRange!.slice(
-      0,
-      selectedHours
-    );
-    setSnapshots(filteredSnapshots);
-  }, [data, loading, selectedHours]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error! {error.message}</p>;
-
-  const onHoursChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSnapshots(data!.getPairSnapshotsByDateRange!.slice(0, selectedHours));
-  };
 
   return (
     <>
       <label className={styles.rangeLabel}>
         Select range:
-        <select
-          value={selectedHours}
-          onChange={(e) => {
-            setSelectedHours(Number(e.target.value));
-          }}
-        >
+        <select value={selectedHours} onChange={onHoursChange}>
           <option value={1}>1hr</option>
           <option value={12}>12hr</option>
           <option value={24}>24hr</option>
         </select>
       </label>
+      <label className={styles.rangeLabel}>
+        Select pair:
+        <select value={selectedPair} onChange={onPairChange}>
+          {initialPairs.map((pair, index) => (
+            <option key={index} value={pair}>
+              {pair}
+            </option>
+          ))}
+        </select>
+      </label>
       <CardsInfo period={selectedHours} snapshotData={snapshots} />
-      {!loading && data && (
+      {!loading && snapshots && (
         <LineChart snapshotData={snapshots} hours={selectedHours} />
       )}
     </>

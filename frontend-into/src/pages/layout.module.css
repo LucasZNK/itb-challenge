@@ -11,3 +11,20 @@
   width: 100%;
   flex-direction: column;
 }
+
+.sidebarContainer {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  height: 100%;
+  background-color: white;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: #f9f9fb;
+}

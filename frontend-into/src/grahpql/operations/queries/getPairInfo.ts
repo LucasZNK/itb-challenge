@@ -1,5 +1,4 @@
 import { gql } from "@apollo/client";
-// import { gql } from '../../../__generated__/gql';
 
 export const GET_SNAPSHOT = gql(/* GraphQL */ `
   query GetPairSnapshotsByDateRange(

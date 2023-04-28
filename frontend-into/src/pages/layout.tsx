@@ -30,19 +30,13 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <ProSidebarProvider>
-      <div
-        style={{
-          display: "flex",
-          height: "100vh",
-        }}
-      >
+      <div className={styles.sidebarContainer}>
         <Sidebar
           defaultCollapsed={true}
           collapsedWidth="63px"
           width="100px"
-          style={{ height: "100%" }}
+          className={styles.sidebar}
           hidden={isHidden}
-          backgroundColor="white"
         >
           <Menu>
             <MenuItem className="menu1">
@@ -57,14 +51,7 @@ const Layout = ({ children }: LayoutProps) => {
             <MenuItem> Logout </MenuItem>
           </Menu>
         </Sidebar>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            backgroundColor: "#F9F9FB",
-          }}
-        >
+        <div className={styles.mainContent}>
           <Navbar />
           <div>{children}</div>
         </div>

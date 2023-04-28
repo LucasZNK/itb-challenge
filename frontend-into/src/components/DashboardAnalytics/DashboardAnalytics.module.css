@@ -37,3 +37,14 @@
 .rangeLabel select:hover {
   border-color: #c6c6c6;
 }
+
+@media screen and (max-width: 630px) {
+  .rangeLabel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rangeLabel select {
+    max-width: 100px;
+  }
+}
