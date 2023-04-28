@@ -40,7 +40,7 @@ const Layout = ({ children }: LayoutProps) => {
         >
           <Menu>
             <MenuItem className="menu1">
-              <h2>QUICKPAY</h2>
+              <h2>Into the blocks</h2>
             </MenuItem>
             <MenuItem> Dashboard </MenuItem>
             <MenuItem> Invoices </MenuItem>

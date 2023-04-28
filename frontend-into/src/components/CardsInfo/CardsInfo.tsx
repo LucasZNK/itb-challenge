@@ -53,7 +53,7 @@ const CardsInfo = ({ snapshotData, period }: Props) => {
     }
 
     calculateStats();
-  }, [snapshotData]);
+  }, [snapshotData, period]);
 
   const formatPercentage = (value: number) => {
     return value.toFixed(2) + "%";

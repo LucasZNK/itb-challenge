@@ -7,8 +7,6 @@ import {
   SnapshotPairData,
 } from "../__generated__/graphql";
 
-import { initialPairs } from "@/constants/pairs";
-
 interface Props {
   initialPairAddress: string;
   fromRange: number;
