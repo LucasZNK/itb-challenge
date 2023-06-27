@@ -1,4 +1,4 @@
-# Into The Blocks Challenge
+# CHALLENGE
 This project consists of a frontend and a backend that run in Docker containers. The frontend is called "frontend-into" and the backend is called "backend-into".
 
 ## Technologies Used
